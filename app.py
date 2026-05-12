@@ -122,6 +122,17 @@ if not df.empty:
     
     df_selection = df.query("Year in @year_filter & Region in @region_filter & Category in @category_filter")
 
+    # زر تحميل البيانات
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 📥 Export Data")
+    csv = df_selection.to_csv(index=False).encode('utf-8')
+    st.sidebar.download_button(
+        label="Download Filtered Data (CSV)",
+        data=csv,
+        file_name='ecommerce_data_filtered.csv',
+        mime='text/csv',
+    )
+
     # 5. Header
     st.markdown("<h1 style='margin-bottom: 30px;'>📊 E-Commerce Sales Analytics</h1>", unsafe_allow_html=True)
     
@@ -180,7 +191,7 @@ if not df.empty:
                                    plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
                                    font=dict(family="Inter", size=14, color="#475569"),
                                    title_font=dict(size=20, color="#0f172a", family="Inter"),
-                                   xaxis=dict(tickangle=45, showgrid=False),
+                                   xaxis=dict(tickangle=-45, showgrid=False, type='category'),
                                    yaxis=dict(showgrid=True, gridcolor='#e2e8f0'),
                                    height=400, margin=dict(l=0, r=0, t=50, b=0))
             st.plotly_chart(fig_line, use_container_width=True)
@@ -226,3 +237,32 @@ if not df.empty:
                                   yaxis=dict(showgrid=True, gridcolor='#e2e8f0'),
                                   height=400, margin=dict(l=0, r=0, t=50, b=0))
             st.plotly_chart(fig_bar2, use_container_width=True)
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        c5, c6 = st.columns(2)
+        
+        with c5:
+            # Scatter Plot: Profit vs Discount
+            fig_scatter = px.scatter(df_selection, x='Discount', y='Profit', color='Category', 
+                                     title='📉 Profit vs. Discount Analysis',
+                                     hover_data=['Sub-Category'])
+            fig_scatter.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                                      font=dict(family="Inter", size=14, color="#475569"),
+                                      title_font=dict(size=20, color="#0f172a", family="Inter"),
+                                      xaxis=dict(showgrid=True, gridcolor='#e2e8f0', title="Discount Rate"),
+                                      yaxis=dict(showgrid=True, gridcolor='#e2e8f0', title="Profit ($)"),
+                                      height=400, margin=dict(l=0, r=0, t=50, b=0))
+            st.plotly_chart(fig_scatter, use_container_width=True)
+            
+        with c6:
+            # Donut Chart: Payment Mode
+            if "Payment Mode" in df_selection.columns:
+                pay_sales = df_selection.groupby('Payment Mode')['Order ID'].count().reset_index()
+                fig_donut = px.pie(pay_sales, values='Order ID', names='Payment Mode', hole=0.5,
+                                 title='💳 Orders by Payment Mode',
+                                 color_discrete_sequence=['#14b8a6', '#f43f5e', '#8b5cf6', '#eab308'])
+                fig_donut.update_layout(font=dict(family="Inter", size=15, color="#475569"),
+                                        title_font=dict(size=20, color="#0f172a", family="Inter"),
+                                        height=400, margin=dict(l=0, r=0, t=50, b=0))
+                fig_donut.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#ffffff', width=2)))
+                st.plotly_chart(fig_donut, use_container_width=True)
