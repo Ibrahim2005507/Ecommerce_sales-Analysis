@@ -39,5 +39,3 @@ An interactive, end-to-end data analytics dashboard built with **Python**, **Str
    streamlit run app.py
    ```
 
-## 👨‍💻 Developer
-Developed by **Ibrahim Elashry**.
